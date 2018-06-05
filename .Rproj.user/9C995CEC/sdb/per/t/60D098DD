@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(\"RMySQL\")\nlibrary(\"DBI\")\nlibrary(\"GPArotation\")\nlibrary(\"ggplot2\")\nlibrary(\"tidyverse\")\nlibrary(\"marelac\")\nlibrary(\"tidyquant\")\n\n#Guide: http://www.ahschulz.de/2013/07/23/installing-rmysql-under-windows/\n\n# Download the MySQL connector https://dev.mysql.com/downloads/connector/odbc/\n\n\ncon <- dbConnect(MySQL(),\n                 user=\"LCRoysterproject\", \n                 password=\"HLLV6Pske0vTzhIZfSya\",\n                 dbname=\"LCRoysterproject\", \n                 host=\"ict-prod-hosting05.mysql.osg.ufl.edu\", \n                 port= 3359)\n\n# Listing all of the columns in the database\ndbListTables(con)\n\nwq <- dbReadTable(conn = con, name = 'lcroyster_buoyobservation')\n\nwq$date<- as.POSIXct(wq$observation_datetime, tz=\"EST\",usetz=TRUE)\n#wq$date<- as.POSIXct(wq$date, tz=\"GMT\")\n\nstandard=42.914\nwq$sal <- convert_RtoS(wq$conductivity_mS_cm/standard, \n                                t= wq$temperature_c, p= 0)\n\n\n#Quick plots to check calculated salinity and temperature\n\nggplot(data= wq, aes( x= date, y= salinity_psu_calculated, color= \"Salinity with Marelac\")) +\n  geom_point(color= \"black\") +\n  ggtitle(\"Calculated Salinity for Sites 1-9\") +\n  facet_wrap (~location_id, scales= \"free_y\")\n\n\nggplot(data= wq, aes( x= date, y= temperature_c)) + \n  ggtitle(\"Temperature for Sites 1-9\") +\n  geom_point(color= \"black\") +\n  facet_wrap (~location_id, scales= \"free_y\")\n\n\n#Moving averages\n#https://www.rdocumentation.org/packages/tidyquant/versions/0.5.5/topics/geom_ma\n# n= Number of periods to average over. Must be between 1 and nrow(x), inclusive.\n\n\n  ggplot(wq, aes(x = date, y = salinity_psu_calculated)) +\n  geom_point(alpha=0.6) +                         \n  geom_ma(ma_fun = SMA, n = 100, color= \"red\",linetype=1.1, size= 1.1)+\n    coord_x_datetime(xlim = c(today() - weeks(12), today()))+\n    facet_wrap(~location_id, ncol=2)\n  \nclass(wq$date)\n\n\n",
+    "created" : 1525984773980.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "2228286154",
+    "id" : "60D098DD",
+    "lastKnownWriteTime" : 1528138942,
+    "last_content_update" : 1528138943123,
+    "path" : "T:/Oyster Project/mels_git/qa_qc/qa_qc/data_script_mysql.R",
+    "project_path" : "data_script_mysql.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
