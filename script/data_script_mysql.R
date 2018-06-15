@@ -31,6 +31,9 @@ wq$sal <- convert_RtoS(wq$conductivity_mS_cm/standard,
                                 t= wq$temperature_c, p= 0)
 
 
+#Removing the observations from the spat that was found on Site 2, during december
+
+
 #Quick plots to check calculated salinity and temperature
 
 ggplot(data= wq, aes( x= date, y= salinity_psu_calculated, color= "Salinity with Marelac")) +
