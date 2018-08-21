@@ -4,8 +4,8 @@ library("GPArotation")
 library("ggplot2")
 library("tidyverse")
 library("marelac")
-library("tidyquant")
 library("dplyr")
+library("lubridate")
 
 #Guide: http://www.ahschulz.de/2013/07/23/installing-rmysql-under-windows/
 
@@ -24,38 +24,42 @@ dbListTables(con)
 
 wq <- dbReadTable(conn = con, name = 'lcroyster_buoyobservation')
 
-wq$date<- as.POSIXct(wq$observation_datetime, tz="EST",usetz=TRUE)
+#test<- dbReadTable(conn = con, name = 'LCRoysterproject.buoy_temp')
+
+wq$Date<- ymd_hms(wq$observation_datetime, tz="EST") %>%
+  round_date("hour")
 #wq$date<- as.POSIXct(wq$date, tz="GMT")
 
-standard=42.914
-wq$sal <- convert_RtoS(wq$conductivity_mS_cm/standard, 
-                                t= wq$temperature_c, p= 0)
+#test$date<-as.POSIXct(test$observation_datetime, tz="EST",usetz=TRUE)
+
+#standard=42.914
+#wq$sal <- convert_RtoS(wq$conductivity_mS_cm/standard, 
+                                #t= wq$temperature_c, p= 0)
+
+#test$sal<-convert_RtoS(test$conductivity_mS_cm/standard, 
+                       #t= test$temperature_c, p= 0)
+
 
 
 #Removing observations that have been affected by outside elements, barnacles or oyster growths on the sensor
 
 #Need to convert location_id into a numeric value so that it can be filtere with dplyr
 
-wq$location_id<-as.numeric(as.integer(wq$location_id))
 
 
-`%notin%` <- function(x,y) !(x %in% y) 
-class(wq$location_id)
-
-wq %>%
-filter(location_id == 2) %>%
-filter(date >= as.POSIXct("2017-10-27") & date <= as.POSIXct("2017-12-01"))
+wq %>% 
+  filter(location_id ==7 & Date > "2018-08-06")
 
 
-ggplot(data= wq, aes( x= date, y= salinity_psu_calculated, color= "Salinity with Marelac")) +
+
+ggplot(data= wq, aes( x= Date, y= salinity_psu_calculated, color= "Salinity with Marelac")) +
   geom_point(color= "black") +
   ggtitle("Calculated Salinity for Sites 1-9") +
-  facet_wrap (~location_id, scales= "free_y")
+  facet_wrap (~location_id, ncol=2)
 
 
 
-#%>%
-  #filter(date %notin% dates)
+
 
 
 #Quick plots to check calculated salinity and temperature
